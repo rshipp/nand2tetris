@@ -21,7 +21,7 @@ class Error(Exception):
 def assemble(filename):
     with open(filename, "r") as f:
         code = [line.split('/')[0].strip()
-                for line in (l.strip() for l in f.read().split('\r\n'))
+                for line in (l.strip() for l in f.read().splitlines())
                 if line and not line.startswith('/')]
 
     # Pass 1
