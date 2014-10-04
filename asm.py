@@ -1,13 +1,27 @@
+"""Assembler for CSCI410 HW06.
+
+The design is pretty hackish, but it works, and has a few simple
+optimizations built in. The design described in the book is far more complex
+than it needs to be.
+
+The assignment didn't specify how to do error handling, so I'm just raising
+from a custom exception class - this could be extended later to be more
+"correct."
+"""
+
 import sys
 
 import tables
+
+MAX_ACONST = 32767
 
 class Error(Exception):
     pass
 
 def assemble(filename):
     with open(filename, "r") as f:
-        code = [line.split('/')[0].strip() for line in (l.strip() for l in f.read().split('\r\n'))
+        code = [line.split('/')[0].strip()
+                for line in (l.strip() for l in f.read().split('\r\n'))
                 if line and not line.startswith('/')]
 
     # Pass 1
@@ -33,7 +47,7 @@ def assemble_a(line):
 
     value = line[1:]
     try:
-        if int(value) <= 32767 and int(value) >= 0:
+        if int(value) <= MAX_ACONST and int(value) >= 0:
             return a_inst(value)
         else:
             raise Error('A-instruction used invalid const: {line}'.format(line=line))

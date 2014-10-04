@@ -1,3 +1,6 @@
+"""Tables for the Assembler"""
+
+
 comp = {
     '0': '0101010',
     '1': '0111111',
