@@ -1,0 +1,10 @@
+1. Ryan Shipp
+2. 
+3. ~1 hour
+4. Used textbook, and information from lecture.
+
+Usage:
+
+    python asm.py file.asm > file.hack
+
+See docstrings in asm.py for more notes.

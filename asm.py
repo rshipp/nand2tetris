@@ -1,12 +1,12 @@
 """Assembler for CSCI410 HW06.
 
-The design is pretty hackish, but it works, and has a few simple
+This design is pretty hackish, but it works, and has a few simple
 optimizations built in. The design described in the book is far more complex
 than it needs to be.
 
 The assignment didn't specify how to do error handling, so I'm just raising
-from a custom exception class - this could be extended later to be more
-"correct."
+from a custom exception class - this could be extended later to be something
+more useful.
 """
 
 import sys
