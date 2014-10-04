@@ -7,30 +7,41 @@ class Error(Exception):
 
 def assemble(filename):
     with open(filename, "r") as f:
-        code = [line for line in (l.strip() for l in f.read().split('\r\n'))
+        code = [line.split('/')[0].strip() for line in (l.strip() for l in f.read().split('\r\n'))
                 if line and not line.startswith('/')]
 
+    # Pass 1
     count = 0
     for line in code:
-        #if line.startswith('('):
-        #    tables.symbols[line.strip('()')] = count + 1
+        if line.startswith('('):
+            tables.symbols[line.strip('()')] = count
+        else:
+            count = count + 1
 
+    # Pass 2
+    for line in code:
         if line.startswith('@'):
             print(assemble_a(line))
         elif line.startswith('('):
-            tables.symbols[line.strip('()')] = count + 1
             continue
         else:
             print(assemble_c(line))
 
-        count = count + 1
-
 def assemble_a(line):
+    def a_inst(value):
+        return bin(int(value))[2:].zfill(16)
+
     value = line[1:]
-    if int(value) <= 16384:
-        return bin(int(line[1:]))[2:].zfill(16)
-    else:
-        raise Error('A-instruction constant was too big: {line}'.format(line=line))
+    try:
+        if int(value) <= 32767 and int(value) >= 0:
+            return a_inst(value)
+        else:
+            raise Error('A-instruction used invalid const: {line}'.format(line=line))
+    except ValueError:
+        if value not in tables.symbols:
+            tables.symbols[value] = tables.symbols[None]
+            tables.symbols[None] = tables.symbols[None] + 1
+        return a_inst(tables.symbols[value])
 
 def assemble_c(line):
     try:
