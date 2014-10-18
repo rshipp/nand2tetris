@@ -1,3 +1,5 @@
+"""Assembly language translations for the VM translator."""
+
 push_from_d = [
     '@SP',
     'AM=M+1',
