@@ -28,17 +28,61 @@ compare = [
     '({op}END_{id})',
 ]
 
+segments = {
+    'local': 'LCL',
+    'argument': 'ARG',
+    'this': 'THIS',
+    'that': 'THAT',
+}
+
+d_setup = [
+    '@{n}',
+    'D=A',
+]
+
+push_setd = [
+    'A=M+D',
+    'D=M',
+]
+
+pop_setd = [
+    'D=M+D',
+]
+
+d_to_m = [
+    '@SP',
+    'AM=M-1',
+    'M=D',
+]
+
 def push(args):
     if args[0] == 'constant':
-        return [
-            '@{n}'.format(n=args[1]),
-            'D=A',
+        return [l.format(n=args[1]) for l in d_setup] + push_from_d
+    elif args[0] in segments:
+        return [l.format(n=args[1]) for l in d_setup] + [
+            '@{type}'.format(type=segments[args[0]]),
+        ] + push_setd + push_from_d
+    elif args[0] == 'temp':
+        return [l.format(n=args[1]) for l in d_setup] + [
+            '@R5', # Temp0
+            'A=A+D',
+            'D=M',
         ] + push_from_d
-    elif args[1] == 'static':
-        return ['// push static not implemented']
+    else:
+        return ['// push {type} not implemented'.format(type=args[0])]
 
 def pop(args):
-    return ['// pop not implemented.']
+    if args[0] in segments:
+        return [l.format(n=args[1]) for l in d_setup] + [
+            '@{type}'.format(type=segments[args[0]]),
+        ] + pop_setd + d_to_m
+    elif args[0] == 'temp':
+        return [l.format(n=args[1]) for l in d_setup] + [
+            '@R5', # Temp0
+            'D=A+D',
+        ] + d_to_m
+    else:
+        return ['// pop {type} not implemented'.format(type=args[0])]
 
 commands = {
     'push': push,
