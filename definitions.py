@@ -68,6 +68,11 @@ def push(args):
             'A=A+D',
             'D=M',
         ] + push_from_d
+    elif args[0] == 'static':
+        id = '.'.join(['{id}', args[1]])
+        return [l.format(n=id) for l in d_setup] + [
+            'D=M'
+        ] + push_from_d
     else:
         return ['// push {type} not implemented'.format(type=args[0])]
 
@@ -81,6 +86,14 @@ def pop(args):
             '@R5', # Temp0
             'D=A+D',
         ] + d_to_m
+    elif args[0] == 'static':
+        return [
+            '@SP',
+            'AM=M-1',
+            'D=M',
+            '.'.join(['@{id}', args[1]]),
+            'M=D',
+        ]
     else:
         return ['// pop {type} not implemented'.format(type=args[0])]
 

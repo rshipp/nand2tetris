@@ -13,15 +13,15 @@ def translate(filename):
                 for line in (l.strip() for l in f.read().splitlines())
                 if line and not line.startswith('/')]
 
+        shortname = os.path.basename(filename)[:-len('.vm')]
         for c, line in enumerate(code):
             command, *args = line.split()
             if command in ['push', 'pop']:
                 for translated_line in definitions.commands[command](args):
-                    print(translated_line)
+                    print(translated_line.format(id=shortname))
             else:
                 for translated_line in definitions.commands[command]:
-                    id = '_'.join([os.path.basename(filename)[:-len('.vm')], str(c)])
-                    print(translated_line.format(id=id))
+                    print(translated_line.format(id='_'.join([shortname, str(c)])))
 
 if __name__ == "__main__":
     translate(sys.argv[1])
