@@ -50,8 +50,13 @@ pop_setd = [
 ]
 
 d_to_m = [
+    '@R13',
+    'M=D',
     '@SP',
     'AM=M-1',
+    'D=M',
+    '@R13',
+    'A=M',
     'M=D',
 ]
 
@@ -73,6 +78,11 @@ def push(args):
         return [l.format(n=id) for l in d_setup] + [
             'D=M'
         ] + push_from_d
+    elif args[0] == 'pointer':
+        return [
+            '@{n}'.format(n=int(args[1])+3), # THIS or THAT
+            'D=M',
+        ] + push_from_d
     else:
         return ['// push {type} not implemented'.format(type=args[0])]
 
@@ -92,6 +102,14 @@ def pop(args):
             'AM=M-1',
             'D=M',
             '.'.join(['@{id}', args[1]]),
+            'M=D',
+        ]
+    elif args[0] == 'pointer':
+        return [
+            '@SP',
+            'AM=M-1',
+            'D=M',
+            '@{n}'.format(n=int(args[1])+3), # THIS or THAT
             'M=D',
         ]
     else:
