@@ -1,16 +1,31 @@
 push_from_d = [
     '@SP',
-    'A=M',
+    'AM=M+1',
+    'A=A-1',
     'M=D',
-    '@SP',
-    'M=M+1',
 ]
 
-pop_to_d = [
+pop_to_m = [
     '@SP',
-    'M=M-1',
-    'A=M',
+    'A=M-1',
+]
+
+pop_two = [
+    '@SP',
+    'AM=M-1',
     'D=M',
+    'A=A-1',
+]
+
+compare = [
+    'D=M-D',
+    'M=-1',
+    '@{op}END_{id}',
+    'D;J{op}',
+    '@SP',
+    'A=M-1',
+    'M=0',
+    '({op}END_{id})',
 ]
 
 def push(args):
@@ -20,54 +35,21 @@ def push(args):
             'D=A',
         ] + push_from_d
     elif args[1] == 'static':
-        pass
+        return ['// push static not implemented']
 
 def pop(args):
     return ['// pop not implemented.']
 
-def eq(args):
-    return ['// eq not implemented.']
-
-def lt(args):
-    return ['// lt not implemented.']
-
-def gt(args):
-    return ['// gt not implemented.']
-
-def add(args):
-    return pop_to_d + [
-        '@SP',
-        'M=M-1',
-        'A=M',
-        'D=D+M',
-    ] + push_from_d
-
-def sub(args):
-    return ['// sub not implemented.']
-
-def neg(args):
-    return ['// neg not implemented.']
-
-def and_(args):
-    return ['// and not implemented.']
-
-def or_(args):
-    return ['// or not implemented.']
-
-def not_(args):
-    return ['// not not implemented.']
-
 commands = {
     'push': push,
     'pop': pop,
-    'eq': eq,
-    'lt': lt,
-    'gt': gt,
-    'add': add,
-    'sub': sub,
-    'neg': neg,
-    'and': and_,
-    'or': or_,
-    'not': not_,
+    'eq': pop_two + [l.replace('{op}', 'EQ') for l in compare],
+    'lt': pop_two + [l.replace('{op}', 'LT') for l in compare],
+    'gt': pop_two + [l.replace('{op}', 'GT') for l in compare],
+    'add': pop_two + ['M=M+D'],
+    'sub': pop_two + ['M=M-D'],
+    'neg': pop_to_m + ['M=-M'],
+    'and': pop_two + ['M=M&D'],
+    'or': pop_two + ['M=M|D'],
+    'not': pop_to_m + ['M=!M'],
 }
-
