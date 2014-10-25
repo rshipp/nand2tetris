@@ -38,7 +38,7 @@ def translate(filename):
                         print(translated_line.format(id=function))
                 elif command in ['call']:
                     for translated_line in definitions.commands[command](args[0], args[1]):
-                        print(translated_line.format(id='_'.join([function, str(c), 'return'])))
+                        print(translated_line.format(id='_'.join([function, str(c), 'RTN'])))
                 else:
                     for translated_line in definitions.commands[command]:
                         print(translated_line.format(id='_'.join([shortname, str(c)])))

@@ -174,11 +174,14 @@ def pop(args):
         return ['// pop {type} not implemented'.format(type=args[0])]
 
 def function(nlocals):
-    return [
-        '({id})',
-        '@0',
-        'D=A',
-    ] + push_from_d * int(nlocals)
+    if nlocals:
+        return [
+            '({id})',
+            '@0',
+            'D=A',
+        ] + push_from_d * int(nlocals)
+    else:
+        return ['({id})']
 
 def call(f, n):
     return [
