@@ -18,6 +18,7 @@ def translate(filename):
                     if line and not line.startswith('/')]
 
             shortname = os.path.basename(vmfile)[:-len('.vm')]
+            function = ''
             for c, line in enumerate(code):
                 command, *args = line.split()
                 if command in ['push', 'pop']:
@@ -25,10 +26,11 @@ def translate(filename):
                         print(translated_line.format(id=shortname))
                 elif command in ['label', 'goto', 'if-goto']:
                     for translated_line in definitions.commands[command]:
-                        print(translated_line.format(id=args[0]))
+                        print(translated_line.format(id='{fn}${lbl}'.format(fn=function, lbl=args[0])))
                 elif command in ['function']:
+                    function = args[0]
                     for translated_line in definitions.commands[command](args[1]):
-                        print(translated_line.format(id=args[0]))
+                        print(translated_line.format(id=function))
                 else:
                     for translated_line in definitions.commands[command]:
                         print(translated_line.format(id='_'.join([shortname, str(c)])))
