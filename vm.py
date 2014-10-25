@@ -17,7 +17,7 @@ def translate(filename):
             if command in ['push', 'pop']:
                 for translated_line in definitions.commands[command](args):
                     print(translated_line.format(id=shortname))
-            elif command in ['label', 'if-goto']:
+            elif command in ['label', 'goto', 'if-goto']:
                 for translated_line in definitions.commands[command]:
                     print(translated_line.format(id=args[0]))
             else:

@@ -134,4 +134,5 @@ commands = {
     'not': pop_to_m + ['M=!M'],
     'label': ['({id})'],
     'if-goto': pop_value_to_m + ['D=M', '@{id}', 'D;JNE'],
+    'goto': ['@{id}', '0;JMP'],
 }
