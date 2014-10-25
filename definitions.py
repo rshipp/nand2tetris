@@ -12,9 +12,12 @@ pop_to_m = [
     'A=M-1',
 ]
 
-pop_two = [
+pop_value_to_m = [
     '@SP',
     'AM=M-1',
+]
+
+pop_two = pop_value_to_m + [
     'D=M',
     'A=A-1',
 ]
@@ -129,4 +132,6 @@ commands = {
     'and': pop_two + ['M=M&D'],
     'or': pop_two + ['M=M|D'],
     'not': pop_to_m + ['M=!M'],
+    'label': ['({id})'],
+    'if-goto': pop_value_to_m + ['D=M', '@{id}', 'D;JNE'],
 }
