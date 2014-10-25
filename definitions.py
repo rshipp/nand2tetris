@@ -65,6 +65,59 @@ d_to_m = [
     'M=D',
 ]
 
+return_ = [
+    # FRAME = LCL
+    '@LCL',
+    'D=M',
+    '@R13',
+    'M=D',
+    # RET = *(FRAME-5)
+    '@5',
+    'A=D-A',
+    'D=M',
+    '@R14',
+    'M=D',
+    # *ARG = pop()
+    ] + pop_value_to_m + [
+    'D=M',
+    '@ARG',
+    'A=M',
+    'M=D',
+    # SP = ARG+1
+    '@ARG',
+    'D=M+1',
+    '@SP',
+    'M=D',
+    # THAT = *(FRAME-1)
+    '@R13',
+    'AM=M-1',
+    'D=M',
+    '@THAT',
+    'M=D',
+    # THIS = *(FRAME-2)
+    '@R13',
+    'AM=M-1',
+    'D=M',
+    '@THIS',
+    'M=D',
+    # ARG = *(FRAME-3)
+    '@R13',
+    'AM=M-1',
+    'D=M',
+    '@ARG',
+    'M=D',
+    # LCL = *(FRAME-4)
+    '@R13',
+    'AM=M-1',
+    'D=M',
+    '@LCL',
+    'M=D',
+    # goto RET
+    '@R14',
+    'A=M',
+    '0;JMP',
+]
+
 def push(args):
     if args[0] == 'constant':
         return [l.format(n=args[1]) for l in d_setup] + push_from_d
@@ -120,6 +173,13 @@ def pop(args):
     else:
         return ['// pop {type} not implemented'.format(type=args[0])]
 
+def function(nlocals):
+    return [
+        '({id})',
+        '@0',
+        'D=A',
+    ] + push_from_d * int(nlocals)
+
 commands = {
     'push': push,
     'pop': pop,
@@ -135,4 +195,6 @@ commands = {
     'label': ['({id})'],
     'if-goto': pop_value_to_m + ['D=M', '@{id}', 'D;JNE'],
     'goto': ['@{id}', '0;JMP'],
+    'function': function,
+    'return': return_,
 }

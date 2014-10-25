@@ -20,6 +20,9 @@ def translate(filename):
             elif command in ['label', 'goto', 'if-goto']:
                 for translated_line in definitions.commands[command]:
                     print(translated_line.format(id=args[0]))
+            elif command in ['function']:
+                for translated_line in definitions.commands[command](args[1]):
+                    print(translated_line.format(id=args[0]))
             else:
                 for translated_line in definitions.commands[command]:
                     print(translated_line.format(id='_'.join([shortname, str(c)])))
