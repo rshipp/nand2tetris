@@ -180,6 +180,47 @@ def function(nlocals):
         'D=A',
     ] + push_from_d * int(nlocals)
 
+def call(f, n):
+    return [
+        # push return-address
+        '@{id}',
+        'D=A',
+    ] + push_from_d + [
+        # push LCL
+        '@LCL',
+        'D=M',
+    ] + push_from_d + [
+        # push ARG
+        '@ARG',
+        'D=M',
+    ] + push_from_d + [
+        # push THIS
+        '@THIS',
+        'D=M',
+    ] + push_from_d + [
+        # push THAT
+        '@THAT',
+        'D=M',
+    ] + push_from_d + [
+        # ARG = SP-n-5
+        '@{num}'.format(num=int(n)+5),
+        'D=A',
+        '@SP',
+        'D=M-D',
+        '@ARG',
+        'M=D',
+        # LCL = SP
+        '@SP',
+        'D=M',
+        '@LCL',
+        'M=D',
+        # goto f
+        '@{f}'.format(f=f),
+        '0;JMP',
+        # (return-address)
+        '({id})',
+    ]
+
 commands = {
     'push': push,
     'pop': pop,
@@ -197,4 +238,15 @@ commands = {
     'goto': ['@{id}', '0;JMP'],
     'function': function,
     'return': return_,
+    'call': call,
 }
+
+# Bootstrap code
+bootstrap = [
+    # SP=256
+    '@256',
+    'D=A',
+    '@SP',
+    'M=D',
+    # call Sys.init
+] + [l.format(id='BOOTSTRAP') for l in call('Sys.init', 0)]

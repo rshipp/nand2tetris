@@ -11,6 +11,11 @@ def translate(filename):
     else:
         files = [filename]
 
+    # Write bootstrap code
+    for line in definitions.bootstrap:
+        print(line)
+
+    # Translate code
     for vmfile in files:
         with open(vmfile, "r") as f:
             code = [line.split('/')[0].strip()
@@ -31,6 +36,9 @@ def translate(filename):
                     function = args[0]
                     for translated_line in definitions.commands[command](args[1]):
                         print(translated_line.format(id=function))
+                elif command in ['call']:
+                    for translated_line in definitions.commands[command](args[0], args[1]):
+                        print(translated_line.format(id='_'.join([function, str(c), 'return'])))
                 else:
                     for translated_line in definitions.commands[command]:
                         print(translated_line.format(id='_'.join([shortname, str(c)])))
