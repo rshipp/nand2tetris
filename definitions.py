@@ -1,3 +1,4 @@
+import re
 import string
 
 def type(token):
@@ -9,8 +10,10 @@ def type(token):
         return 'stringConstant'
     elif token in keywords:
         return 'keyword'
-    else:
+    elif re.findall('^[A-Za-z_]+\w*$', token):
         return 'identifier'
+    else:
+        raise Exception("Can't parse token: {token}".format(token=token))
 
 keywords = [
     'boolean',
@@ -26,7 +29,9 @@ keywords = [
     'int',
     'let',
     'method',
+    'null',
     'return',
+    'static',
     'this',
     'true',
     'var',
