@@ -19,4 +19,5 @@ Parser usage:
     python parser.py MyFileT.xml
     # Writes to MyFile.xml
 
-
+Both the tokenizer and the parser should work on directories as well,
+writing the output into the *current working dir*, not the input directory.
