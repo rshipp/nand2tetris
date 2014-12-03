@@ -2,7 +2,6 @@
 
 import os
 import sys
-import re
 
 import xmlhandler
 import definitions
@@ -16,89 +15,196 @@ def parse(filename):
     # Analyze code.
     for tfile in files:
         with open(tfile, "r") as f:
-            tokens = [t for t in xmlhandler.parse(f.read())]
+            tokens = (t for t in xmlhandler.parse(f.read()))
             shortname = os.path.basename(tfile)[:-len('T.xml')]
 
             # Parse.
-            xml = compile(tokens)
+            parser = Parser(tokens)
+            xml = parser.compile_class()
 
             with open(''.join([shortname, '.xml']), "w") as t:
                 t.write(xml)
 
-def match_structure(structure, tokens):
-    start, end = structure
-    for c, element in enumerate(start):
-        if element and tokens[c][1] != element:
-            return False
-    for c in range(1, len(end)+1):
-        if not end[-c] and tokens[-c][1] != end[-c]:
-            return False
-    return True
 
-def compile(tokens):
-    return terms[tokens[0][1]](tokens)
+class Parser:
+    def __init__(self, tokens):
+        self.tokens = tokens
+        next = self.tokens.next()
+        self.next_token = next[1]
+        self.next_type = next[0]
 
-def compile_class(tokens):
-    """ class Identifier { tokens } """
-    head = xmlhandler.unparse(tokens[0:3])
-    mid = tokens[3:-1]
-    tail = xmlhandler.unparse(tokens[-1:])
-    return '<class>\n' + head + compile(mid) + tail + '</class>\n'
+    def advance(self):
+        try:
+            next = self.tokens.next()
+            self.next_token = next[1]
+            self.next_type = next[0]
+        except StopIteration:
+            pass
 
-def compile_subroutineDec(tokens):
-    """ Keyword Keyword Identifier ( parameterList ) { tokens } """
-    head = xmlhandler.unparse(tokens[0:4])
-    parameterList = []
-    c = 0
-    for token in tokens[4:]:
-        if token[1] != ')':
-            parameterList.append(token)
+    def compile_class(self):
+        if self.next_token == 'class':
+            return '<class>\n' + self.compile_terminal('class') + \
+                   self.compile_terminal() + self.compile_terminal('{') + \
+                   self.compile_classVarDec() + self.compile_subroutineDecs() + \
+                   self.compile_terminal('}') + '</class>\n'
+
+    def compile_terminal(self, match=False):
+        terminal = (self.next_type, self.next_token)
+        if match and match != self.next_token:
+            raise SyntaxError("Expected '{e}', but got '{a}'".format(e=match, a=self.next_token))
+        self.advance()
+        return xmlhandler.unparse([terminal])
+
+    def compile_classVarDec(self):
+        if not self.next_token in ['field', 'static']:
+            # Empty
+            return ''
+        # Non-empty
+        return '<classVarDec>\n' + self.compile_terminal() + \
+               self.compile_terminal() + self.compile_terminal() + \
+               self.compile_varIdentifiers() + self.compile_terminal() + \
+               '</classVarDec>\n' + self.compile_classVarDec()
+
+    def compile_varDec(self):
+        xml = '<varDec>\n' + self.compile_terminal('var') + \
+               self.compile_terminal() + self.compile_terminal()
+        while self.next_token == ',':
+            xml += self.compile_terminal(',') + self.compile_terminal()
+        return xml + self.compile_terminal(';') + '</varDec>\n'
+
+    def compile_varIdentifiers(self):
+        if self.next_token != ',':
+            # Empty
+            return ''
+        # Non-empty
+        return self.compile_terminal(',') + self.compile_terminal() + \
+               self.compile_varIdentifiers()
+
+    def compile_subroutineDecs(self):
+        if not self.next_token in ['constructor', 'function', 'method']:
+            # Empty
+            return ''
+        # Non-empty
+        return '<subroutineDec>\n' + self.compile_terminal() + \
+               self.compile_terminal() + self.compile_terminal() + \
+               self.compile_terminal('(') + self.compile_parameterList() + \
+               self.compile_terminal(')') + self.compile_subroutineBody() + \
+               '</subroutineDec>\n' + self.compile_subroutineDecs()
+
+    def compile_parameterList(self):
+        if self.next_token == ')':
+            # Empty
+            return '<parameterList>\n</parameterList>\n'
+        # Non-empty
+        xml = '<parameterList>\n' + self.compile_terminal() + self.compile_terminal()
+        while self.next_token == ',':
+            xml += self.compile_terminal(',') + self.compile_terminal() + \
+                   self.compile_terminal()
+        return xml + '</parameterList>\n'
+
+    def compile_subroutineBody(self):
+        xml = '<subroutineBody>\n' + self.compile_terminal('{')
+        while self.next_token == 'var':
+            xml += self.compile_varDec()
+        xml += self.compile_statements() + self.compile_terminal('}')
+        return xml + '</subroutineBody>\n'
+
+    def compile_statements(self):
+        xml = '<statements>\n'
+        statement_types = {
+            'while': self.compile_whileStatement,
+            'if': self.compile_ifStatement,
+            'return': self.compile_returnStatement,
+            'let': self.compile_letStatement,
+            'do': self.compile_doStatement,
+        }
+        while self.next_token in statement_types:
+            xml += statement_types[self.next_token]()
+        return xml + '</statements>\n'
+
+    def compile_whileStatement(self):
+        return '<whileStatement>\n' + self.compile_terminal('while') + \
+               self.compile_terminal('(') + self.compile_expression() + \
+               self.compile_terminal(')') + self.compile_terminal('{') + \
+               self.compile_statements() + self.compile_terminal('}') + \
+               '</whileStatement>\n'
+
+    def compile_ifStatement(self):
+        xml = '<ifStatement>\n' + self.compile_terminal('if') + \
+              self.compile_terminal('(') + self.compile_expression() + \
+              self.compile_terminal(')') + self.compile_terminal('{') + \
+              self.compile_statements() + self.compile_terminal('}')
+        if self.next_token == 'else':
+            xml += self.compile_terminal('else') + \
+                    self.compile_terminal('{') + self.compile_statements() + \
+                    self.compile_terminal('}')
+        return xml + '</ifStatement>\n'
+
+    def compile_returnStatement(self):
+        xml = '<returnStatement>\n' + self.compile_terminal('return')
+        if self.next_token != ';':
+            xml += self.compile_expression()
+        xml += self.compile_terminal(';')
+        return xml + '</returnStatement>\n'
+
+    def compile_letStatement(self):
+        xml = '<letStatement>\n' + self.compile_terminal('let') + self.compile_terminal()
+        if self.next_token != '=':
+            xml += self.compile_terminal('[') + self.compile_expression() + \
+                   self.compile_terminal(']')
+        xml += self.compile_terminal('=') + self.compile_expression() + \
+               self.compile_terminal(';')
+        return xml + '</letStatement>\n'
+
+    def compile_doStatement(self):
+        return '<doStatement>\n' + self.compile_terminal('do') + \
+               self.compile_terminal() + self.compile_subroutineCall() + \
+               self.compile_terminal(';') + '</doStatement>\n'
+
+    def compile_subroutineCall(self):
+        xml = ''
+        if self.next_token == '.':
+            xml += self.compile_terminal('.') + self.compile_terminal()
+        xml += self.compile_terminal('(') + self.compile_expressionList() + \
+               self.compile_terminal(')')
+        return xml
+
+    def compile_expressionList(self):
+        if self.next_token == ')':
+            return '<expressionList>\n</expressionList>\n'
+        xml = '<expressionList>\n' + self.compile_expression()
+        while self.next_token == ',':
+            xml += self.compile_terminal() + self.compile_expression()
+        return xml + '</expressionList>\n'
+
+    def compile_expression(self):
+        xml = '<expression>\n' + self.compile_term()
+        while self.next_token in definitions.expr_symbols:
+            xml += self.compile_terminal() + self.compile_term()
+        return xml + '</expression>\n'
+
+    def compile_term(self):
+        xml = '<term>\n'
+        if self.next_type in ['keyword', 'integerConstant', 'stringConstant']:
+            xml += self.compile_terminal()
+        elif self.next_token in ['~', '-']:
+            # Notted/negated
+            xml += self.compile_terminal() + self.compile_term()
+        elif self.next_token == '(':
+            # Parentheses
+            xml += self.compile_terminal() + self.compile_expression() + \
+                   self.compile_terminal(')')
         else:
-            break
-        c += 1
-    second = tokens[4+c]
-    mid = tokens[4+c+1:-1]
-    tail = xmlhandler.unparse(tokens[-1:])
-    return '<subroutineDec>\n' + head + compile(mid) + tail + '</subroutineDec>\n'
+            xml += self.compile_terminal()
+            # Array handling
+            if self.next_token == '[':
+                xml += self.compile_terminal('[') + \
+                       self.compile_expression() + self.compile_terminal(']')
+            # Subroutine call
+            elif self.next_token in ['.', '(']:
+                xml += self.compile_subroutineCall()
+        return xml + '</term>\n'
 
-
-structures = {
-    (('class', None, '{'), ('}')): compile_class,
-#    (('function', None, '{'
-}
-
-nonterminals = {
-    #'class': '',
-    #'classVarDec': '',
-    #'subroutineDec': '',
-    ##'parameterList': '',
-    ##'subroutineBody': '',
-    #'varDec': '',
-    ##'statements': '',
-    #'whileStatement': '',
-    #'ifStatement': '',
-    #'returnStatement': '',
-    #'letStatement': '',
-    #'doStatement': '',
-    ##'expression': '',
-    ##'term': '',
-    ##'expressionList': '',
-}
-
-terms = {
-    'class': compile_class,
-    'constructor': compile_subroutineDec,
-    'do': compile_doStatement,
-    'field': compile_classVarDec,
-    'function': compile_subroutineDec,
-    'if': compile_ifStatement,
-    'let': compile_letStatement,
-    'method': compile_subroutineDec,
-    'return': compile_returnStatement,
-    'static': compile_classVarDec,
-    'var': compile_varDec,
-    'while': compile_whileStatement,
-}
 
 if __name__ == "__main__":
     parse(sys.argv[1])

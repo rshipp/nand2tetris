@@ -15,6 +15,18 @@ def type(token):
     else:
         raise Exception("Can't parse token: {token}".format(token=token))
 
+expr_symbols = [
+    '&',
+    '*',
+    '+',
+    '-',
+    '/',
+    '|',
+    '&lt;',
+    '=',
+    '&gt;',
+]
+
 keywords = [
     'boolean',
     'char',
