@@ -27,7 +27,9 @@ def parse(filename):
 
 
 class Parser:
+    """Parses XML input from the tokenizer."""
     def __init__(self, tokens):
+        """'tokens' should be a generator expression."""
         self.tokens = tokens
         next = self.tokens.next()
         self.next_token = next[1]
