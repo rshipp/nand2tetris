@@ -1,23 +1,14 @@
 1. Ryan Shipp
 2. 
-3. ~12 hours.
+3. ~ hours.
 4. Used textbook, and information from lecture.
 
 Notes:
 
-I rewrote the parser to be closer to the way the book describes it, using a
-class, and consuming tokens from a generator as the code is processed. I'd
-rather have made it more functional and recursive, but at least it works now.
+Compiler usage:
 
-Tokenizer usage:
+    python compiler.py MyFile.jack
+    # Writes to MyFile.vm
 
-    python tokenizer.py MyFile.jack 
-    # Writes to MyFileT.xml
-
-Parser usage:
-
-    python parser.py MyFileT.xml
-    # Writes to MyFile.xml
-
-Both the tokenizer and the parser should work on directories as well,
-writing the output into the *current working dir*, not the input directory.
+The compiler should work on directories as well, writing the output into the
+*current working dir*, not the input directory.
