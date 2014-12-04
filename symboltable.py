@@ -23,8 +23,11 @@ class SymbolTable:
                 'num': num,
             }
 
-    def lookup(self, name, type, kind):
-        pass
+    def lookup(self, name):
+        if name in self.table[self._class]['functions'][self._function]:
+            return self.table[self._class]['functions'][self._function][name]
+        elif name in self.table[self._class]['vars']:
+            return self.table[self._class]['vars'][name]
 
     def set_class(self, name):
         self.table[name] = {

@@ -206,35 +206,57 @@ class Parser:
         return xml + '</letStatement>\n'
 
     def compile_doStatement(self):
-        return '<doStatement>\n' + self.compile_terminal('do') + \
-               self.compile_terminal() + self.compile_subroutineCall() + \
-               self.compile_terminal(';') + '</doStatement>\n'
+        xml = '<doStatement>\n' + self.compile_terminal('do') + \
+              self.compile_subroutineCall() + \
+              self.compile_terminal(';') + '</doStatement>\n'
+        self.code += ['pop temp 0']
+        return xml
 
     def compile_subroutineCall(self):
-        xml = ''
+        name = self.next_token
+        xml = self.compile_terminal()
+        self.numexpressions = 0
         if self.next_token == '.':
-            xml += self.compile_terminal('.') + self.compile_terminal()
+            xml += self.compile_terminal('.')
+            info = self.symbols.lookup(name)
+            if info:
+                code += ['push {v}'.format(v=name)]
+                self.numexpressions += 1 # Is this right?
+                vmname = info['type'] + '.' + self.next_token
+            else:
+                vmname = name + '.' + self.next_token
+            xml += self.compile_terminal()
+        else:
+            vmname = self.symbols.get_class() + '.' + name
         xml += self.compile_terminal('(') + self.compile_expressionList() + \
                self.compile_terminal(')')
+        self.code += ['call {v} {n}'.format(v=vmname,
+                                            n=self.numexpressions)]
         return xml
 
     def compile_expressionList(self):
         if self.next_token == ')':
             return '<expressionList>\n</expressionList>\n'
         xml = '<expressionList>\n' + self.compile_expression()
+        self.numexpressions += 1
         while self.next_token == ',':
             xml += self.compile_terminal() + self.compile_expression()
+            self.numexpressions += 1
         return xml + '</expressionList>\n'
 
     def compile_expression(self):
         xml = '<expression>\n' + self.compile_term()
-        while self.next_token in definitions.expr_symbols:
+        while self.next_token in definitions.ops:
+            op = self.next_token
             xml += self.compile_terminal() + self.compile_term()
+            self.code += [definitions.ops[op]]
         return xml + '</expression>\n'
 
     def compile_term(self):
         xml = '<term>\n'
         if self.next_type in ['keyword', 'integerConstant', 'stringConstant']:
+            if self.next_type == 'integerConstant':
+                self.code += ['push constant {c}'.format(c=self.next_token)]
             xml += self.compile_terminal()
         elif self.next_token in ['~', '-']:
             # Notted/negated

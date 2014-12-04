@@ -15,17 +15,17 @@ def type(token):
     else:
         raise Exception("Can't parse token: {token}".format(token=token))
 
-expr_symbols = [
-    '&',
-    '*',
-    '+',
-    '-',
-    '/',
-    '|',
-    '&lt;',
-    '=',
-    '&gt;',
-]
+ops = {
+    '&': 'and',
+    '*': 'call Math.multiply 2',
+    '+': 'add',
+    '-': 'sub',
+    '/': 'call Math.divide 2',
+    '|': 'or',
+    '&lt;': 'lt',
+    '=': 'eq',
+    '&gt;': 'gt',
+}
 
 types = [
     'boolean',
