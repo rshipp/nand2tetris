@@ -27,9 +27,14 @@ expr_symbols = [
     '&gt;',
 ]
 
-keywords = [
+types = [
     'boolean',
     'char',
+    'int',
+    'void',
+]
+
+keywords = types + [
     'class',
     'constructor',
     'do',
@@ -38,7 +43,6 @@ keywords = [
     'field',
     'function',
     'if',
-    'int',
     'let',
     'method',
     'null',
@@ -47,6 +51,5 @@ keywords = [
     'this',
     'true',
     'var',
-    'void',
     'while',
 ]
