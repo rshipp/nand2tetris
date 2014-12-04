@@ -197,12 +197,21 @@ class Parser:
         return xml + '</returnStatement>\n'
 
     def compile_letStatement(self):
-        xml = '<letStatement>\n' + self.compile_terminal('let') + self.compile_terminal()
+        xml = '<letStatement>\n' + self.compile_terminal('let')
+        varname = self.next_token
+        xml += self.compile_terminal()
         if self.next_token != '=':
             xml += self.compile_terminal('[') + self.compile_expression() + \
                    self.compile_terminal(']')
         xml += self.compile_terminal('=') + self.compile_expression() + \
                self.compile_terminal(';')
+        info = self.symbols.lookup(varname)
+        if info['kind'] == 'field':
+            segment = 'this'
+        else:
+            segment = info['kind']
+        print(segment)
+        self.code += ['pop {s} {o}'.format(s=segment, o=info['num'])]
         return xml + '</letStatement>\n'
 
     def compile_doStatement(self):
