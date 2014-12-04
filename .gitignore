@@ -1,3 +1,5 @@
 *.py[cdo]
 *.xml
 *.zip
+*.jack
+*.vm
