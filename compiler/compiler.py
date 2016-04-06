@@ -1,4 +1,4 @@
-"""Jack compiler for CSCI410 HW11."""
+"""Jack compiler"""
 
 import os
 import sys

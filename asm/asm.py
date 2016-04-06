@@ -1,4 +1,4 @@
-"""Assembler for CSCI410 HW06.
+"""Assembler for Jack.
 
 This design is pretty hackish, but it works, and has a few simple
 optimizations built in. The design described in the book is far more complex

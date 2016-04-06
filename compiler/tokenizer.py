@@ -1,4 +1,4 @@
-"""Jack tokenizer for CSCI410 HW10."""
+"""Jack tokenizer"""
 
 import cgi
 import os

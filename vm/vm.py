@@ -1,4 +1,4 @@
-"""Virtual machine translator for CSCI410 HW08."""
+"""Virtual machine translator"""
 
 import os
 import sys
