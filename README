@@ -1,0 +1,21 @@
+1. Ryan Shipp
+2. 
+3. ~6 hours.
+4. Used textbook, and information from lecture.
+
+Notes:
+
+This one uses a Python 3 syntax for splitting lists, so it will fail on
+Python 2.x. I tested with 3.4, but 3.3 should be just as good. The output is
+optimized beyond the pop_to_d/push_from_d primitives discussed in class, and
+should use significantly fewer instructions in most cases.
+
+As usual, the output is moderately optimized.
+
+Usage:
+
+    python3 vm.py MyFile.vm > MyFile.asm
+
+or
+
+    python3 vm.py MyDirectory > MyDirectory/MyDirectory.asm
