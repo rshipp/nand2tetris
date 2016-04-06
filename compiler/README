@@ -1,14 +1,7 @@
-1. Ryan Shipp
-2. 
-3. ~5 hours.
-4. Used textbook, and information from lecture.
-
 Notes:
 
-I completed up to slide 20 of "L23-Compiler6", so both the empty program and
-"Seven" compile correctly. The symbol table is fully functional, and tracks
-current class and function. Python 2 is required, because generators in
-Python 3 don't have a .next() method.
+Possibly incomplete solution.
+Python 2 is required, because generators in Python 3 don't have a .next() method.
 
 Compiler usage:
 
